@@ -160,6 +160,5 @@ print(torch.backends.mps.is_built())
 
 ### 5.pycharm中使用对应的环境
 
-在使用pycharm时，查看终端可以看到当前使用的是哪个anaconda环境。这里我们切到pytorch环境，然后查看python版本，正是我们需要的3.9版本。
-
-![QQ_1730269810341](./images/QQ_1730270354336.png)
+用pycharm新建工程时，使用anaconda3新建
+![QQ_1730269810341](./images/72d7af7d136bd1adaf85039b6480d052.png)
