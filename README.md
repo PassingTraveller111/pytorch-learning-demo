@@ -167,8 +167,128 @@ print(torch.backends.mps.is_built())
 
 点击添加解释器/添加本地解释器
 
-![QQ_1730275604019](/Users/liujingmin/Library/Containers/com.tencent.qq/Data/tmp/QQ_1730275604019.png)
+![QQ_1730275604019](./images/QQ_1730285089081.png)
 
 然后最左边切到Conda环境，单选使用现有环境，点击下拉框就可以使用我们之前创建好的环境
 
-![QQ_1730275642072](/Users/liujingmin/Library/Containers/com.tencent.qq/Data/tmp/QQ_1730275642072.png)
+![QQ_1730275642072](./images/QQ_1730285056159.png)
+
+## 三、两大工具函数
+
+### 1.`dir`
+
+在 Python 中，`dir()` 函数是一个非常有用的内置函数。
+
+**一、作用**
+
+`dir()` 函数用于返回一个对象的所有属性和方法的列表（包括从父类继承来的属性和方法）。如果没有传入参数，它会返回当前作用域中的名称列表。
+
+**二、用法示例**
+
+1. 对模块使用：
+
+```python
+   import math
+   print(dir(math))
+```
+
+这将列出 `math` 模块中的所有属性和方法，比如 `pi`、`sin`、`cos` 等。
+
+1. 对类使用：
+
+```python
+   class MyClass:
+       def __init__(self):
+           self.x = 10
+       def my_method(self):
+           pass
+
+   obj = MyClass()
+   print(dir(obj))
+```
+
+这会列出 `MyClass` 实例对象的属性和方法，包括从 `object` 类继承来的方法，如 `__init__`、`__str__` 等，以及自定义的属性 `x` 和方法 `my_method`。
+
+1. 没有参数时：
+
+```python
+   def my_function():
+       pass
+
+   print(dir())
+```
+
+如果在这个函数所在的作用域中调用 `dir()`，它会列出当前作用域中的名称，比如可能包括内置函数名、已导入的模块名、自定义的函数名等。
+
+**三、用途**
+
+1. 探索对象的功能：当你使用一个不熟悉的对象时，可以通过 `dir()` 快速了解它提供了哪些属性和方法。
+2. 调试和开发：在调试过程中，可以检查对象是否具有特定的属性或方法，以帮助确定问题所在。
+3. 动态编程：可以根据对象的属性和方法动态地调用它们，实现更加灵活的编程。
+
+### 2.`help`
+
+在 Python 中，`help()` 函数是一个用于获取帮助信息的内置函数。
+
+**一、作用**
+
+调用 `help()` 函数可以显示对象的文档字符串（如果有）以及关于该对象的一些帮助信息，包括对象的属性和方法的描述。
+
+**二、用法示例**
+
+1. 对模块使用：
+
+```python
+   import math
+   help(math)
+```
+
+这将显示 `math` 模块的帮助信息，包括模块的文档字符串（如果有）以及模块中定义的函数和常量的描述。
+
+1. 对函数使用：
+
+```python
+   def my_function():
+       """This is a custom function."""
+       pass
+
+   help(my_function)
+```
+
+会显示关于 `my_function` 的帮助信息，包括函数的文档字符串。
+
+1. 对类使用：
+
+```python
+   class MyClass:
+       """This is a custom class."""
+       def __init__(self):
+           pass
+
+   help(MyClass)
+```
+
+显示 `MyClass` 类的帮助信息，包括类的文档字符串以及类的方法的描述。
+
+1. 对方法使用：
+
+```python
+   class MyClass:
+       def my_method(self):
+           """This is a custom method."""
+           pass
+
+   obj = MyClass()
+   help(obj.my_method)
+```
+
+显示 `my_method` 方法的帮助信息。
+
+**三、用途**
+
+1. 学习新的模块、函数、类或方法：当你遇到一个不熟悉的 Python 内置模块或第三方库时，使用 `help()` 可以快速了解其功能和用法。
+2. 查看文档字符串：可以方便地查看开发者为函数、类等编写的文档说明，以便更好地理解代码的意图和使用方式。
+3. 调试和理解代码：在调试过程中，通过查看帮助信息可以更好地理解代码的行为和各个部分的作用。
+
+## 四、Pytorch如何加载数据
+
