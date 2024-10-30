@@ -162,3 +162,13 @@ print(torch.backends.mps.is_built())
 
 用pycharm新建工程时，使用anaconda3新建
 ![QQ_1730269810341](./images/72d7af7d136bd1adaf85039b6480d052.png)
+
+已有的工程也可以在设置/项目/解释器中更改，当前的anaconda会默认是base环境，如果要改成我们之前创建的pytorch环境，就需要
+
+点击添加解释器/添加本地解释器
+
+![QQ_1730275604019](/Users/liujingmin/Library/Containers/com.tencent.qq/Data/tmp/QQ_1730275604019.png)
+
+然后最左边切到Conda环境，单选使用现有环境，点击下拉框就可以使用我们之前创建好的环境
+
+![QQ_1730275642072](/Users/liujingmin/Library/Containers/com.tencent.qq/Data/tmp/QQ_1730275642072.png)
