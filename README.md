@@ -399,3 +399,393 @@ for batch in train_dataSet:
     print(batch) # (<PIL.JpegImagePlugin.JpegImageFile image mode=RGB size=500x375 at 0x12D0E6AF0>, 'ants')
 ```
 
+## 五、TensorBoard
+
+### 1.简介
+
+TensorBoard 是一个用于可视化和分析 TensorFlow 运行过程和结果的工具。它可以帮助你更好地理解、调试和优化机器学习模型。
+
+### 2.安装
+
+PyTorch 本身并不自带 TensorBoard。
+
+但是，可以通过安装 `torch.utils.tensorboard` 模块来在 PyTorch 中使用 TensorBoard。
+
+**安装指令**：
+
+```
+pip install tensorboard
+```
+
+**导入**：
+
+```python
+from torch.utils.tensorboard import SummaryWriter
+```
+
+### 3.`SummaryWriter`的使用方法
+
+**一、导入模块并创建`SummaryWriter`对象**
+
+```python
+from torch.utils.tensorboard import SummaryWriter
+
+writer = SummaryWriter(log_dir='runs/experiment_name')
+```
+
+这里的`log_dir`参数指定了保存事件文件的目录路径。可以根据不同的实验设置不同的目录名称。
+
+**二、在训练过程中记录数据**
+
+1. **标量数据（Scalars）**：
+
+   可以记录训练过程中的损失、准确率等标量指标。
+
+   以下是`add_scalar`方法的详细用法：
+
+   ```python
+   add_scalar(tag, scalar_value, global_step=None, walltime=None)
+   ```
+
+   - `tag`：字符串类型，表示数据的名称标签。这个标签将在 TensorBoard 中用于区分不同的数据系列。例如，可以使用`'loss'`表示损失值，`'accuracy'`表示准确率等。
+   - `scalar_value`：要记录的标量值，可以是整数、浮点数等数值类型。
+   - `global_step`：可选参数，通常是一个整数，表示当前的训练步数、迭代次数或 epoch 数等。这个参数用于在横坐标上显示数据的位置。如果不提供这个参数，数据将在 TensorBoard 中以无顺序的方式显示。
+   - `walltime`：可选参数，通常是一个浮点数，表示记录数据的时间戳。如果不提供这个参数，将使用当前时间。
+
+   以下是一个示例用法：
+
+   ```python
+   from torch.utils.tensorboard import SummaryWriter
+   
+   writer = SummaryWriter('runs/experiment')
+   
+   for epoch in range(10):
+       loss = epoch * 0.1
+       writer.add_scalar('training_loss', loss, epoch)
+   
+   writer.close()
+   ```
+
+   在这个例子中，每次循环都会将当前的 epoch 数和对应的损失值记录到 TensorBoard 中，使用`'training_loss'`作为标签。这样在 TensorBoard 中就可以看到随着 epoch 的增加，损失值的变化情况。
+
+2. **图像数据（Images）**：
+
+可以记录训练过程中的图像数据，例如输入图像、生成的图像等。
+
+以下是`add_image`方法的详细用法：
+
+```python
+add_image(tag, img_tensor, global_step=None, walltime=None, dataformats='CHW')
+```
+
+- `tag`：字符串类型，表示图像的名称标签。这个标签将在 TensorBoard 中用于区分不同的图像系列。
+- `img_tensor`：一个形状为`(C, H, W)`或`(B, C, H, W)`的张量，表示单个图像或一批图像。其中`C`表示图像的通道数，`H`表示图像的高度，`W`表示图像的宽度，`B`表示批次大小。图像数据的值应该在`[0, 1]`或`[0, 255]`范围内。
+- `global_step`：可选参数，通常是一个整数，表示当前的训练步数、迭代次数或 epoch 数等。这个参数用于在横坐标上显示图像的位置。如果不提供这个参数，图像将在 TensorBoard 中以无顺序的方式显示。
+- `walltime`：可选参数，通常是一个浮点数，表示记录图像的时间戳。如果不提供这个参数，将使用当前时间。
+- `dataformats`：可选参数，字符串类型，表示图像数据的格式。默认值为`'CHW'`，表示通道（Channel）、高度（Height）、宽度（Width）的顺序。如果图像数据的形状是`(B, H, W, C)`，则可以设置`dataformats='BHWC'`。
+
+以下是一个示例用法：
+
+```python
+from torch.utils.tensorboard import SummaryWriter
+import torch
+import numpy as np
+
+writer = SummaryWriter('runs/experiment')
+
+# 创建一个形状为 (3, 32, 32) 的随机图像张量
+img_tensor = torch.randn(3, 32, 32)
+
+# 将图像数据添加到 TensorBoard
+writer.add_image('random_image', img_tensor)
+
+writer.close()
+```
+
+在这个例子中，创建了一个随机的图像张量，并将其添加到 TensorBoard 中，使用`'random_image'`作为标签。这样在 TensorBoard 中就可以看到这个图像。如果要添加一批图像，可以将`img_tensor`的形状设置为`(B, C, H, W)`。
+
+3. **直方图（Histograms）**：
+
+可以记录张量的直方图，例如权重、偏置等参数的分布情况。
+
+```python
+   weights =...  # 模型的权重张量
+   writer.add_histogram('weights', weights, epoch)
+```
+
+4. **嵌入向量（Embeddings）**：
+
+可以记录高维数据的低维嵌入，例如词向量或图像特征向量。
+
+```python
+   embeddings =...  # 一个 Tensor 嵌入向量数据
+   labels =...  # 对应的标签数据
+   writer.add_embedding(embeddings, metadata=labels, global_step=epoch)
+```
+
+**三、关闭`SummaryWriter`对象**
+
+在训练结束后，应该关闭`SummaryWriter`对象以确保所有数据都被正确写入事件文件。
+
+```python
+writer.close()
+```
+
+**四、启动 TensorBoard 进行可视化**
+
+在命令行中运行以下命令来启动 TensorBoard：
+
+```plaintext
+tensorboard --logdir=runs/experiment_name
+```
+
+其中`runs/experiment_name`是你在创建`SummaryWriter`对象时指定的日志目录路径。然后在浏览器中打开给出的网址，就可以查看 TensorBoard 中的可视化结果了。
+
+### 4.使用例子
+
+#### 4.1 以`y=2x`函数为例，运行代码
+
+```python
+from torch.utils.tensorboard import SummaryWriter
+
+# 将日志数据存储到logs目录下
+writer = SummaryWriter('logs')
+
+# y = 2x
+for i in range(100):
+    writer.add_scalar("y=2x", 2 * i, i)
+
+writer.close()
+```
+
+当前目录下就会创建`logs`目录，用来存储日志文件
+
+![QQ_1730361030438](images/QQ_1730361078331.png)
+
+#### 4.2 启动tensorboard服务
+
+终端输入：
+
+```
+tensorboard --logdir=src/logs
+```
+
+可以看到，tensorboard服务被运行在本地的6006端口
+
+![QQ_1730361200165](images/QQ_1730362807515.png)
+
+用浏览器访问端口
+
+![QQ_1730361261086](images/QQ_1730362840346.png)
+
+### 5.`add_image`方法
+
+前面简单介绍了`add_image`方法，需要注意的是`add_image`的`img_tensor`可以接受的类型有` (torch.Tensor, numpy.ndarray, or string/blobname)` 
+
+#### 5.1 `opencv`
+
+`opencv-python`库是一个功能强大的计算机视觉库，可以用于处理图像数据。以下是一些常见的处理图像数据的方法：
+
+**一、安装和导入**
+
+首先，确保你已经安装了`opencv-python`库。可以使用以下命令进行安装：
+
+```plaintext
+pip install opencv-python
+```
+
+然后，在你的 Python 代码中导入该库：
+
+```python
+import cv2
+```
+
+**二、读取和显示图像**
+
+1. 读取图像：
+
+   使用`cv2.imread()`函数读取图像文件。该函数接受图像文件的路径作为参数，并返回一个表示图像的 NumPy 数组。
+
+```python
+   image = cv2.imread('path/to/image.jpg')
+```
+
+1. 显示图像：
+
+   使用`cv2.imshow()`函数显示图像。该函数接受一个窗口名称和图像数组作为参数，并在指定的窗口中显示图像。
+
+```python
+   cv2.imshow('Image', image)
+   cv2.waitKey(0)
+   cv2.destroyAllWindows()
+```
+
+`cv2.waitKey(0)`函数等待用户按下任意键，然后`cv2.destroyAllWindows()`函数关闭所有打开的窗口。
+
+**三、图像基本操作**
+
+1. 访问像素值：
+
+   可以使用索引来访问图像中的像素值。图像是一个三维数组，其中第一个维度表示行数（高度），第二个维度表示列数（宽度），第三个维度表示颜色通道（通常是蓝、绿、红三个通道）。
+
+```python
+   # 获取图像的高度、宽度和通道数
+   height, width, channels = image.shape
+
+   # 访问特定像素的值
+   pixel_value = image[y, x]  # y 和 x 是像素的坐标
+```
+
+2. 修改像素值：
+
+   可以使用索引来修改图像中的像素值。
+
+```python
+   image[y, x] = [255, 0, 0]  # 将特定像素设置为蓝色
+```
+
+**四、图像颜色空间转换**
+
+1. BGR 转灰度：
+
+   使用`cv2.cvtColor()`函数将 BGR 颜色空间的图像转换为灰度图像。
+
+```python
+   gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+```
+
+2. BGR 转 HSV：
+
+   使用`cv2.cvtColor()`函数将 BGR 颜色空间的图像转换为 HSV 颜色空间的图像。
+
+```python
+   hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+```
+
+**五、图像滤波和模糊**
+
+1. 均值滤波：
+
+   使用`cv2.blur()`函数对图像进行均值滤波。该函数接受图像数组和核大小作为参数，并返回滤波后的图像。
+
+```python
+   blurred_image = cv2.blur(image, (5, 5))  # (5, 5) 是核的大小
+```
+
+2. 高斯滤波：
+
+   使用`cv2.GaussianBlur()`函数对图像进行高斯滤波。该函数接受图像数组、核大小和标准差作为参数，并返回滤波后的图像。
+
+```python
+   gaussian_blurred_image = cv2.GaussianBlur(image, (5, 5), 0)
+```
+
+**六、图像边缘检测**
+
+Canny 边缘检测：
+
+使用`cv2.Canny()`函数进行 Canny 边缘检测。该函数接受图像数组、低阈值和高阈值作为参数，并返回边缘检测后的图像。
+
+```python
+   edges = cv2.Canny(image, 100, 200)
+```
+
+**七、图像形态学操作**
+
+1. 腐蚀和膨胀：
+
+   使用`cv2.erode()`和`cv2.dilate()`函数进行腐蚀和膨胀操作。这些函数接受图像数组、核和迭代次数作为参数，并返回操作后的图像。
+
+```python
+   kernel = np.ones((5, 5), np.uint8)
+   eroded_image = cv2.erode(image, kernel, iterations=1)
+   dilated_image = cv2.dilate(image, kernel, iterations=1)
+```
+
+2. 开运算和闭运算：
+
+   使用`cv2.morphologyEx()`函数进行开运算和闭运算。该函数接受图像数组、操作类型、核和迭代次数作为参数，并返回操作后的图像。
+
+```python
+   kernel = np.ones((5, 5), np.uint8)
+   opened_image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+   closed_image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
+```
+
+**八、图像变换**
+
+1. 缩放：
+
+   使用`cv2.resize()`函数对图像进行缩放。该函数接受图像数组、目标大小和插值方法作为参数，并返回缩放后的图像。
+
+```python
+   resized_image = cv2.resize(image, (width // 2, height // 2), interpolation=cv2.INTER_LINEAR)
+```
+
+2. 旋转：
+
+   使用`cv2.getRotationMatrix2D()`和`cv2.warpAffine()`函数对图像进行旋转。首先，使用`cv2.getRotationMatrix2D()`函数创建一个旋转矩阵，然后使用`cv2.warpAffine()`函数对图像进行旋转。
+
+```python
+   center = (width // 2, height // 2)
+   angle = 45
+   scale = 1
+   rotation_matrix = cv2.getRotationMatrix2D(center, angle, scale)
+   rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height))
+```
+
+**九、图像保存**
+
+使用`cv2.imwrite()`函数将处理后的图像保存到文件中。该函数接受图像文件的路径和图像数组作为参数。
+
+```python
+cv2.imwrite('path/to/saved_image.jpg', processed_image)
+```
+
+这些只是`opencv-python`库中一些常见的图像处理方法。该库还提供了许多其他功能，如目标检测、特征提取等，可以根据具体需求进行进一步的探索和使用。
+
+#### 5.2 add_image使用例子
+
+模块导入
+
+```python
+from torch.utils.tensorboard import SummaryWriter
+import cv2
+import numpy as np
+```
+
+建立`writer`对象
+
+```python
+writer = SummaryWriter('logs')
+```
+
+创建`image`和`imgArr`‘对象
+
+```python
+test_img_path = '../hymenoptera_data/train/ants/0013035.jpg'
+
+image = cv2.imread(test_img_path)
+
+if image is not None:
+    cv2.imshow('Image', image)
+    cv2.waitKey(0) # 按任意键关闭图像
+    cv2.destroyAllWindows()
+else:
+    print(f"无法读取图像文件：{test_img_path}")
+ 
+# 注意可以接受的图片的类型 img_tensor (torch.Tensor, numpy.ndarray, or string/blobname): Image data
+imgArr = np.array(image) # 这里使用numpy的array类型
+```
+
+使用`add_image`
+
+```
+print(imgArr.shape) # (512,768,3) 是 (H,W,C)类型的图像，这种类型的图像add_images方法需要进行dataformats
+writer.add_image('test', imgArr, 1, dataformats='HWC')
+writer.close()
+```
+
+运行以后，用`databoard`查看日志
+
+![](images/QQ_1730364845923.png)
