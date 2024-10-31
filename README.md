@@ -789,3 +789,153 @@ writer.close()
 运行以后，用`databoard`查看日志
 
 ![](images/QQ_1730364845923.png)
+
+## 六、transforms
+
+### 1.介绍
+
+在 PyTorch 中，`torchvision.transforms`是一个用于图像变换的模块。它提供了一系列的函数和类，可以对图像进行各种操作，如调整大小、裁剪、归一化、数据增强等。
+
+### 2.用法
+
+以下是一些常见的图像变换操作：
+
+**转换为张量（ToTensor）:**
+
+在 PyTorch 中，`torchvision.transforms.ToTensor`是一个常用的图像变换方法。
+
+**作用**：
+
+`ToTensor`将 PIL 图像（或者 NumPy 数组表示的图像）转换为 PyTorch 的张量（tensor）。具体来说，它执行以下操作：
+
+- 将图像的像素值从范围 [0, 255] 归一化到 [0, 1]。
+- 将图像的维度从 (H, W, C)（Height, Width, Channels）转换为 (C, H, W)，其中 C 是通道数（通常是 3 表示 RGB 图像），H 是图像高度，W 是图像宽度。
+
+**示例用法**：
+
+```python
+from torchvision import transforms
+from PIL import Image
+
+img = Image.open('your_image.jpg')
+transform = transforms.ToTensor()
+tensor_img = transform(img)
+```
+
+在图像数据加载和预处理管道中，`ToTensor`通常与其他图像变换方法一起使用，例如调整大小、裁剪、归一化等，以将原始图像数据转换为适合神经网络输入的格式。
+
+![](images/QQ_1730371158725.png)
+
+**调整大小（Resize）**：
+
+```python
+from torchvision import transforms
+transform = transforms.Resize((224, 224))
+```
+
+将图像调整为指定的大小。
+
+**中心裁剪（CenterCrop）**：
+
+```python
+transform = transforms.CenterCrop((200, 200))
+```
+
+从图像中心裁剪出指定大小的区域。
+
+**随机裁剪（RandomCrop）**：
+
+```python
+transform = transforms.RandomCrop((150, 150))
+```
+
+随机从图像中裁剪出指定大小的区域。
+
+**归一化（Normalize）**：
+
+```python
+transform = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+```
+
+对图像的每个通道进行归一化，通常用于将图像数据调整到适合神经网络输入的范围。
+
+**随机水平翻转（RandomHorizontalFlip）**：
+
+```python
+transform = transforms.RandomHorizontalFlip()
+```
+
+以一定的概率随机水平翻转图像。
+
+**随机垂直翻转（RandomVerticalFlip）**：
+
+```python
+transform = transforms.RandomVerticalFlip()
+```
+
+以一定的概率随机垂直翻转图像。
+
+**组合多个变换**：
+
+可以使用`transforms.Compose`将多个变换组合在一起：
+
+```python
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.RandomHorizontalFlip(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
+```
+
+这些变换在图像分类、目标检测等计算机视觉任务中非常常用，可以增加数据的多样性，提高模型的泛化能力。
+
+### 3.为什么需要`toTensor`
+
+在 PyTorch 中使用 `ToTensor` 主要有以下几个重要原因：
+
+**一、数据格式统一**
+
+1. 标准化输入格式
+   - 神经网络通常要求输入具有特定的数据格式。将图像数据转换为张量可以确保所有输入数据具有相同的类型和形状，便于在模型中进行批量处理。例如，PyTorch 的神经网络模型通常期望输入是一批张量，其中每个张量代表一个样本。
+   - 不同的图像格式（如 JPEG、PNG 等）在加载后可能具有不同的数据结构（如 PIL 图像对象），通过 `ToTensor` 可以将它们统一转换为 PyTorch 张量格式，方便后续的数据处理和模型训练。
+2. 维度一致性
+   - 图像在以常见的库（如 PIL）加载后通常以 `(H, W, C)`（高度、宽度、通道数）的顺序存储。而神经网络通常期望输入的维度顺序为 `(C, H, W)`。`ToTensor` 可以方便地进行这种维度顺序的转换，确保数据与神经网络的输入要求一致。
+
+**二、数值范围调整**
+
+1. 归一化像素值
+   - 原始图像的像素值通常在 `[0, 255]` 的范围。将其转换为张量后，像素值被归一化到 `[0, 1]` 的范围。这对于神经网络的训练非常重要，因为较小的数值范围可以使模型的训练更加稳定，避免数值过大导致的梯度爆炸等问题。
+   - 归一化后的像素值也使得不同图像之间的数值差异相对较小，有助于模型更好地学习图像的特征，而不是被不同图像之间的绝对像素值差异所主导。
+
+**三、与 PyTorch 生态系统集成**
+
+1. 方便使用 PyTorch 的工具和功能
+   - PyTorch 提供了丰富的工具和功能来处理张量数据，如自动求导、并行计算等。将图像转换为张量后，可以直接使用这些功能，方便地进行模型的训练和优化。
+   - 例如，在训练过程中，可以使用 PyTorch 的优化器来更新模型的参数，而优化器通常期望输入是张量。
+2. 与其他 PyTorch 模块无缝集成
+   - `ToTensor` 可以与其他 `torchvision.transforms` 中的图像变换方法无缝组合使用，构建强大的数据预处理管道。例如，可以先对图像进行裁剪、翻转等操作，然后再使用 `ToTensor` 将其转换为张量，方便地进行数据增强和预处理。
+
+### 4.实践
+
+运用之前的`add_image`的例子，转换成`tensor`以后，就不需要进行`dataformate`了。
+
+```python
+from torch.utils.tensorboard import SummaryWriter
+from torchvision import transforms
+from PIL import Image
+
+img_path = '../hymenoptera_data/train/ants/6240329_72c01e663e.jpg'
+
+img = Image.open(img_path)
+transform = transforms.ToTensor()
+tensor_img = transform(img)
+
+
+writer = SummaryWriter('logs')
+writer.add_image('test', tensor_img, 1)
+
+writer.close()
+```
+
+
+
