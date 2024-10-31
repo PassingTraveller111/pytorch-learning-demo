@@ -292,3 +292,110 @@ print(torch.backends.mps.is_built())
 
 ## 四、Pytorch如何加载数据
 
+### 1.`pytorch`中的`DataSet`类与`DataLoader`类
+
+#### 1.1 Dataset类
+
+在 PyTorch 中，`Dataset` 类是一个抽象类，用于表示数据集。它的主要目的是为数据加载提供一个统一的接口，使得数据可以方便地被模型使用。
+
+以下是关于 `Dataset` 类的一些重要特点和用法：
+
+1. `__init__()`：初始化方法，通常用于设置数据集的路径、预处理参数等。
+2. `__len__()`：必须实现的方法，返回数据集的大小，即数据集中样本的数量。
+3. `__getitem__()`：必须实现的方法，接受一个索引作为参数，返回数据集中对应索引的样本。
+
+#### 1.2 DataLoader类
+
+在 PyTorch 中，`DataLoader` 是一个用于数据加载的实用工具类。它可以将数据集（通常是一个实现了 `Dataset` 类的对象）包装起来，提供高效的数据加载和批处理功能。
+
+1. `dataset`：这是一个必须的参数，是一个实现了 `Dataset` 类的对象，表示要加载的数据。
+2. `batch_size`：指定每个批次的大小。例如，如果 `batch_size=32`，则每次从数据集中取出 32 个样本组成一个批次。
+3. `shuffle`：如果设置为 `True`，在每个 epoch 开始时会随机打乱数据的顺序。这有助于提高模型的泛化能力。
+4. `num_workers`：指定用于数据加载的子进程数量。增加这个值可以提高数据加载的速度，但也会消耗更多的系统资源。
+5. `drop_last`：如果数据集的大小不能被 `batch_size` 整除，当设置为 `True` 时，会丢弃最后一个不完整的批次。
+
+#### 1.3 使用示例
+
+```python
+import torch
+from torch.utils.data import Dataset, DataLoader
+
+class CustomDataset(Dataset):
+    def __init__(self, data):
+        self.data = data
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+data = [1, 2, 3, 4, 5, 6, 7, 8]
+dataset = CustomDataset(data)
+dataloader = DataLoader(dataset, batch_size=3, shuffle=True, num_workers=2)
+
+for batch in dataloader:
+    print(batch)
+```
+
+#### 1.4 作用和优势
+
+1. 高效数据加载：`DataLoader` 使用多进程（如果 `num_workers` 大于 0）来并行加载数据，从而加快数据加载速度，特别是对于大型数据集。
+2. 批处理：自动将数据分成批次，方便模型进行批量处理。这对于需要批量输入的深度学习模型非常重要。
+3. 数据打乱：通过设置 `shuffle=True`，可以在每个 epoch 中随机打乱数据的顺序，有助于模型更好地学习数据的分布，提高泛化能力。
+4. 灵活性：可以方便地调整各种参数，如批次大小、数据加载的并行度等，以适应不同的数据集和模型需求。
+
+### 2.蚂蚁蜜蜂分类数据集
+
+#### 2.1 数据集下载链接
+
+[下载链接](https://download.pytorch.org/tutorial/hymenoptera_data.zip)
+
+#### 2.2 结构讲解
+
+![](./images/QQ_1730287988011.png)
+
+### 3.使用Dataset和DataLoader加载数据集
+
+#### 3.1 基于Dataset抽象类实现一个数据集类
+
+```python
+class myDataSet(Dataset):
+    def __init__(self, root_dir, label_dir):
+        self.root_dir = root_dir # 数据集根地址
+        self.label_dir = label_dir # 数据集标签地址 ants or bees
+        self.path = os.path.join(root_dir, label_dir) # 数据集图片地址，用根目录和标签目录拼接
+        self.img_dir = os.listdir(self.path)
+    def __getitem__(self, index):
+        img_name = self.img_dir[index]
+        img_item_path = os.path.join(self.root_dir, self.label_dir, img_name)
+        img = Image.open(img_item_path)
+        label = self.label_dir
+        return img, label
+    def __len__(self):
+        return len(self.img_dir)
+```
+
+#### 3.2 创建数据集
+
+```python
+root_dir = '../hymenoptera_data/train'
+ants_label_dir = 'ants'
+bees_label_dir = 'bees'
+ants_dataSet = myDataSet(root_dir, ants_label_dir)
+bees_dataSet = myDataSet(root_dir, bees_label_dir)
+# ants_dataSet.__getitem__(0)[0].show() # 展示蚂蚁数据集的第一张图片
+# 拼接数据集为训练集
+train_dataSet = ants_dataSet + bees_dataSet
+print(train_dataSet.__getitem__(0))
+```
+
+#### 3.3 用DataLoader进行装载
+
+```python
+train_dataLoader = DataLoader(train_dataSet, shuffle=True)
+print(train_dataLoader)
+for batch in train_dataSet:
+    print(batch) # (<PIL.JpegImagePlugin.JpegImageFile image mode=RGB size=500x375 at 0x12D0E6AF0>, 'ants')
+```
+
