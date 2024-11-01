@@ -1035,4 +1035,65 @@ writer.add_image('Resize', img_resize_tensor)
 writer.close()
 ```
 
+transBoard的效果
+
 ![](images/QQ_1730433526311.png)
+
+## 七、dataSet与transform
+
+### 1.使用示例
+
+以下是使用`torchvision.transforms`处理 CIFAR-10 数据集的示例代码：
+
+```python
+import torch
+import torchvision
+import torchvision.transforms as transforms
+
+# 定义数据转换
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+])
+
+# 加载 CIFAR-10 训练集
+trainset = torchvision.datasets.CIFAR10(root='./dataSet/CIFAR10', train=True,
+                                        download=True, transform=transform)
+
+# 加载 CIFAR-10 测试集
+testset = torchvision.datasets.CIFAR10(root='./dataSet/CIFAR10', train=False,
+                                       download=True, transform=transform)
+
+# 创建数据加载器
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
+                                          shuffle=True, num_workers=2)
+
+testloader = torch.utils.data.DataLoader(testset, batch_size=64,
+                                         shuffle=False, num_workers=2)
+```
+
+在上述代码中：
+
+1. 首先定义了一组数据转换操作，包括将图像转换为张量（`ToTensor`）并进行归一化（`Normalize`）。
+2. 然后使用`torchvision.datasets.CIFAR10`加载 CIFAR-10 数据集，设置`root`参数指定数据存储路径，`train=True`表示加载训练集，`download=True`表示如果数据不存在则自动下载，`transform`参数应用定义好的转换操作。
+
+![](images/QQ_1730446698532.png)
+
+下面就是我们存放数据集的位置
+
+![](images/QQ_1730446975529.png)
+
+如果下载失败，也可以直接访问这个链接进行下载 [https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz ](https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz)
+
+3. 最后创建数据加载器`DataLoader`，可以方便地在训练和测试过程中批量加载数据。
+
+### 2.数据集结构解析
+
+下面是通过debug调出来的trainset的结构
+
+![](images/QQ_1730447440579.png)
+
+- `classes`: 类，即这个数据集有多少种标签，这个数据集是经典的10种分类，所以对应了10种标签
+- `data`: 即数据
+- `root`: 数据集存储位置
+- `targets`: 每个数据对应的标签，targets[0]等于6，即第一个数据为第七个种类frog

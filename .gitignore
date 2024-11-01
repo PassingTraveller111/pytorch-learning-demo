@@ -2,3 +2,5 @@
 .idea
 # tensorboard日志文件
 src/logs
+# 数据集
+src/dataSet
