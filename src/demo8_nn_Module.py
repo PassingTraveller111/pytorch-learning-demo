@@ -9,3 +9,4 @@ class MyModule(nn.Module):
         return output
 
 newModule = MyModule()
+print(newModule(1)) # 2

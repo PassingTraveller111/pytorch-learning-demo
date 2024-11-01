@@ -1143,3 +1143,31 @@ class Model(nn.Module):
         return F.relu(self.conv2(x))
 ```
 
+## 九、卷积计算
+
+### 1. 简介
+
+卷积是一种数学运算，在信号处理和图像处理等领域有广泛应用。在深度学习中，特别是在卷积神经网络（Convolutional Neural Network，CNN）中，卷积操作起着核心作用。
+
+### 2. 计算过程
+
+![](images/QQ_1730461445413.png)
+
+### 3.`torch.nn.functional.conv2d`
+
+在 PyTorch 中，`torch.nn.functional.conv2d`是用于执行二维卷积操作的函数。
+
+```python
+torch.nn.functional.conv2d(input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1)
+```
+
+**参数解释**：
+
+- `input`：输入张量，形状通常为 `(batch_size, in_channels, height, width)`。
+- `weight`：卷积核张量，形状通常为 `(out_channels, in_channels/groups, kernel_height, kernel_width)`。
+- `bias`（可选）：偏置张量，形状为 `(out_channels)`。如果设置为 `None`，则不添加偏置。
+- `stride`（可选）：卷积的步长，可以是一个整数或一个包含两个整数的元组，分别表示高度和宽度方向上的步长。默认值为 `1`。
+- `padding`（可选）：填充大小，可以是一个整数或一个包含两个整数的元组，分别表示高度和宽度方向上的填充大小。默认值为 `0`。
+- `dilation`（可选）：膨胀系数，可以是一个整数或一个包含两个整数的元组，分别表示高度和宽度方向上的膨胀系数。默认值为 `1`。
+- `groups`（可选）：分组卷积的参数。将输入通道和输出通道分别分成 `groups` 组，每组分别进行卷积操作。默认值为 `1`。
+
