@@ -1,4 +1,4 @@
-# PyTorch Learning Demo
+PyTorch Learning Demo
 
 ## 一、参考课程
 
@@ -1041,7 +1041,19 @@ transBoard的效果
 
 ## 七、dataSet与transform
 
-### 1.使用示例
+### 1. 简介
+
+Torchvision 在模块中提供了许多内置数据集`torchvision.datasets` ，以及用于构建自己的数据集的实用程序类。
+
+通过 [https://pytorch.org/vision/0.20/datasets.html](https://pytorch.org/vision/0.20/datasets.html)（用的是0.20的官方文档，用户可以自己去官方查看最新版本的文档）可以查看当前pytorch版本的内置数据集，以及其使用方式。
+
+![](images/QQ_1730449538007.png)
+
+比如我们接下来要使用的CIFAR10数据集，详细页面介绍了该数据集的参数：
+
+![](images/QQ_1730449706464.png)
+
+### 2. 使用示例
 
 以下是使用`torchvision.transforms`处理 CIFAR-10 数据集的示例代码：
 
@@ -1087,7 +1099,7 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=64,
 
 3. 最后创建数据加载器`DataLoader`，可以方便地在训练和测试过程中批量加载数据。
 
-### 2.数据集结构解析
+### 3. 数据集结构解析
 
 下面是通过debug调出来的trainset的结构
 
@@ -1097,3 +1109,37 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=64,
 - `data`: 即数据
 - `root`: 数据集存储位置
 - `targets`: 每个数据对应的标签，targets[0]等于6，即第一个数据为第七个种类frog
+
+## 八、nn.Module
+
+### 1.torch.nn
+
+官方文档地址：[https://pytorch.org/docs/stable/nn.html](https://pytorch.org/docs/stable/nn.html)
+
+`torch.nn`是 PyTorch 中用于构建神经网络的模块。主要构成有容器和模块、层、激活函数、损失函数等
+
+![](images/QQ_1730457663341.png)
+
+### 2.nn.Module
+
+在 PyTorch 中，`nn.Module`是一个非常重要的类，属于`Containers`模块下，它是所有神经网络模块的基类。
+
+![](images/QQ_1730458127864.png)
+
+用`pytoch`实现的神经网络都需要继承`nn.Module`类，下面是官方的一个示例：
+
+```python
+import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+        
+    def forward(self, x): # 前向传播，x为输入
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+```
+

@@ -43,7 +43,15 @@ testset = torchvision.datasets.CIFAR10(root='./dataSet/CIFAR10', train=False,
 
 # 创建数据加载器
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
-                                          shuffle=True, num_workers=2)
+                                          shuffle=True, num_workers=0)
 
 testloader = torch.utils.data.DataLoader(testset, batch_size=64,
-                                         shuffle=False, num_workers=2)
+                                         shuffle=False, num_workers=0)
+
+writer = SummaryWriter("logs/CIFAR10")
+step = 0
+for data in testloader:
+    imgs, targets = data
+    writer.add_images("test_data", imgs, step)
+    step += 1
+writer.close()
