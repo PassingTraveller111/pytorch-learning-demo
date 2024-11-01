@@ -828,12 +828,31 @@ tensor_img = transform(img)
 
 **调整大小（Resize）**：
 
+在 PyTorch 中，`transforms.Resize`是用于调整图像大小的变换操作。
+
+**用法示例**：
+
 ```python
 from torchvision import transforms
-transform = transforms.Resize((224, 224))
+
+# 将图像调整为 224x224 大小
+resize_transform = transforms.Resize((224, 224))
+
+image = some_image
+resized_image = resize_transform(image)
 ```
 
-将图像调整为指定的大小。
+**主要参数**：
+
+- `size`：可以是一个整数，表示将图像调整为正方形，短边和长边都将调整为这个整数大小。也可以是一个包含两个整数的元组 `(height, width)`，分别指定调整后的图像高度和宽度。
+
+`transforms.Resize`可以方便地对图像进行尺寸调整，以适应不同的模型输入要求或数据处理需求。需要注意的是，调整大小的方式（如插值方法）可能会影响图像的质量和外观。默认情况下，它使用双线性插值进行图像大小调整。
+
+除了 resize 操作，transforms 还提供了哪些图像变换操作？
+
+介绍一下 transforms 库中常用的图像增强操作。
+
+如何调整 transforms.Resize 的插值方法？
 
 **中心裁剪（CenterCrop）**：
 
@@ -853,9 +872,29 @@ transform = transforms.RandomCrop((150, 150))
 
 **归一化（Normalize）**：
 
+在 PyTorch 中，`transforms.Normalize` 是一种数据归一化的转换操作。
+
+`Normalize` 通常用于将图像的像素值归一化到特定的均值和标准差。其作用是使数据具有零均值和单位方差，这有助于模型更快地收敛并提高性能。
+
+以下是 `Normalize` 的基本用法：
+
 ```python
-transform = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+from torchvision import transforms
+
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
+])
 ```
+
+在上面的例子中，`Normalize` 将输入的图像张量归一化，使得每个通道的均值变为 `0.5`，标准差变为 `0.5`。
+
+参数说明：
+
+- `mean`：是一个包含每个通道均值的序列。例如对于三通道彩色图像，通常设置为 `(0.5, 0.5, 0.5)` 表示将图像的每个通道的值范围从 `[0, 1]` 转换到 `[-1, 1]`。
+- `std`：是一个包含每个通道标准差的序列，与 `mean` 对应。
+
+需要注意的是，`Normalize` 通常在将图像转换为张量（如 `transforms.ToTensor`）之后使用，并且应该根据具体的数据集和任务来调整 `mean` 和 `std` 的值。
 
 对图像的每个通道进行归一化，通常用于将图像数据调整到适合神经网络输入的范围。
 
@@ -937,5 +976,63 @@ writer.add_image('test', tensor_img, 1)
 writer.close()
 ```
 
+**Normalize**
 
+```python
+from PIL import Image
+from torchvision import transforms
+from torch.utils.tensorboard import SummaryWriter
 
+# 日志工具
+writer = SummaryWriter('logs')
+
+# 图像数据
+img_path = '../images/testImg.png'
+img = Image.open(img_path)
+
+# ToTensor
+trans_toTensor = transforms.ToTensor()
+img_tensor = trans_toTensor(img)
+writer.add_image('ToTensor', img_tensor)
+
+# Normalize 进行归一化
+trans_norm = transforms.Normalize([0.5, 0.5, 0.5, 0.5], [0.5, 0.5, 0.5, 0.5])
+img_norm = trans_norm(img_tensor)
+writer.add_image('Normalize', img_norm)
+
+writer.close()
+```
+
+打开transboard查看日志
+
+![](images/QQ_1730433157894.png)
+
+**Resize**
+
+```python
+from PIL import Image
+from torchvision import transforms
+from torch.utils.tensorboard import SummaryWriter
+
+# 日志工具
+writer = SummaryWriter('logs')
+
+# 图像数据
+img_path = '../images/testImg.png'
+img = Image.open(img_path)
+
+# ToTensor
+trans_toTensor = transforms.ToTensor()
+img_tensor = trans_toTensor(img)
+writer.add_image('ToTensor', img_tensor)
+
+# resize
+trans_resize = transforms.Resize((512, 512))
+img_resize = trans_resize(img) # 输入需要是PIL.Image类型，返回也是PIL.Image
+img_resize_tensor = trans_toTensor(img_resize)
+writer.add_image('Resize', img_resize_tensor)
+
+writer.close()
+```
+
+![](images/QQ_1730433526311.png)
