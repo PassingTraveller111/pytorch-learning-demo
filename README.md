@@ -1143,7 +1143,7 @@ class Model(nn.Module):
         return F.relu(self.conv2(x))
 ```
 
-## 九、卷积计算
+## 九、卷积计算与卷积层
 
 ### 1. 简介
 
@@ -1151,7 +1151,35 @@ class Model(nn.Module):
 
 ### 2. 计算过程
 
-![](images/QQ_1730461445413.png)
+下面的动画演示选自：[链接](https://github.com/vdumoulin/conv_arithmetic/blob/master/README.md)
+
+#### Convolution animations
+
+*N.B.: Blue maps are inputs, and cyan maps are outputs.*
+
+| [![img](images/no_padding_no_strides.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/no_padding_no_strides.gif) | [![img](images/arbitrary_padding_no_strides.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/arbitrary_padding_no_strides.gif) | [![img](images/same_padding_no_strides.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/same_padding_no_strides.gif) | [![img](images/full_padding_no_strides.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/full_padding_no_strides.gif) |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| No padding, no strides                                       | Arbitrary padding, no strides                                | Half padding, no strides                                     | Full padding, no strides                                     |
+| [![img](images/no_padding_strides.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/no_padding_strides.gif) | [![img](images/padding_strides.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/padding_strides.gif) | [![img](images/padding_strides_odd.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/padding_strides_odd.gif) |                                                              |
+| No padding, strides                                          | Padding, strides                                             | Padding, strides (odd)                                       |                                                              |
+
+#### Transposed convolution animations
+
+*N.B.: Blue maps are inputs, and cyan maps are outputs.*
+
+| [![img](images/no_padding_no_strides_transposed.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/no_padding_no_strides_transposed.gif) | [![img](images/arbitrary_padding_no_strides_transposed.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/arbitrary_padding_no_strides_transposed.gif) | [![img](images/same_padding_no_strides_transposed.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/same_padding_no_strides_transposed.gif) | [![img](images/full_padding_no_strides_transposed.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/full_padding_no_strides_transposed.gif) |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| No padding, no strides, transposed                           | Arbitrary padding, no strides, transposed                    | Half padding, no strides, transposed                         | Full padding, no strides, transposed                         |
+| [![img](images/no_padding_strides_transposed.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/no_padding_strides_transposed.gif) | [![img](images/padding_strides_transposed.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/padding_strides_transposed.gif) | [![img](images/padding_strides_odd_transposed.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/padding_strides_odd_transposed.gif) |                                                              |
+| No padding, strides, transposed                              | Padding, strides, transposed                                 | Padding, strides, transposed (odd)                           |                                                              |
+
+#### Dilated convolution animations
+
+*N.B.: Blue maps are inputs, and cyan maps are outputs.*
+
+| [![img](images/dilation.gif)](https://github.com/vdumoulin/conv_arithmetic/blob/master/gif/dilation.gif) |
+| ------------------------------------------------------------ |
+| No padding, no stride, dilation                              |
 
 ### 3.`torch.nn.functional.conv2d`
 
@@ -1171,3 +1199,162 @@ torch.nn.functional.conv2d(input, weight, bias=None, stride=1, padding=0, dilati
 - `dilation`（可选）：膨胀系数，可以是一个整数或一个包含两个整数的元组，分别表示高度和宽度方向上的膨胀系数。默认值为 `1`。
 - `groups`（可选）：分组卷积的参数。将输入通道和输出通道分别分成 `groups` 组，每组分别进行卷积操作。默认值为 `1`。
 
+
+
+### 4. 卷积层
+
+[torch.nn.Conv2d(*in_channels*, *out_channels*, *kernel_size*, *stride=1*, *padding=0*, *dilation=1*, *groups=1*, *bias=True*, *padding_mode='zeros'*, *device=None*, *dtype=None*)](https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d)
+
+**Parameters**
+
+- **in_channels** ([*int*](https://docs.python.org/3/library/functions.html#int)) – Number of channels in the input image
+- **out_channels** ([*int*](https://docs.python.org/3/library/functions.html#int)) – Number of channels produced by the convolution
+- **kernel_size** ([*int*](https://docs.python.org/3/library/functions.html#int) *or* [*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple)) – Size of the convolving kernel
+- **stride** ([*int*](https://docs.python.org/3/library/functions.html#int) *or* [*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple)*,* *optional*) – Stride of the convolution. Default: 1
+- **padding** ([*int*](https://docs.python.org/3/library/functions.html#int)*,* [*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple) *or* [*str*](https://docs.python.org/3/library/stdtypes.html#str)*,* *optional*) – Padding added to all four sides of the input. Default: 0
+- **dilation** ([*int*](https://docs.python.org/3/library/functions.html#int) *or* [*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple)*,* *optional*) – Spacing between kernel elements. Default: 1
+- **groups** ([*int*](https://docs.python.org/3/library/functions.html#int)*,* *optional*) – Number of blocked connections from input channels to output channels. Default: 1
+- **bias** ([*bool*](https://docs.python.org/3/library/functions.html#bool)*,* *optional*) – If `True`, adds a learnable bias to the output. Default: `True`
+- **padding_mode** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)*,* *optional*) – `'zeros'`, `'reflect'`, `'replicate'` or `'circular'`. Default: `'zeros'`
+
+## 十、最大池化（池化层 Pooling layers）
+
+最大池化（Max Pooling）是一种在深度学习中常用的操作，主要用于卷积神经网络（CNN）中。
+
+#### **1. 作用和目的**
+
+1. **降维**：通过减少特征图的空间尺寸，降低后续计算的复杂度，减少模型参数和计算量。
+2. **特征提取**：保留局部区域内最显著的特征，突出图像中的重要信息，增强模型对关键特征的提取能力。
+3. **平移不变性**：对输入图像的小幅度平移具有一定的不变性，提高模型的鲁棒性。
+
+#### **2. 操作过程**
+
+1. 定义池化窗口大小和步长。例如，一个常见的池化窗口大小为 2×2，步长为 2。
+2. 将池化窗口在输入特征图上滑动。
+3. 对于每个窗口位置，取窗口内的**最大值**作为输出。
+
+例如，对于一个输入特征图：
+
+```plaintext
+[[1, 2, 3, 4],
+ [5, 6, 7, 8],
+ [9, 10, 11, 12],
+ [13, 14, 15, 16]]
+```
+
+如果采用 2×2 的池化窗口和步长为 2，经过最大池化后的输出为：
+
+```plaintext
+[[6, 8],
+ [14, 16]]
+```
+
+#### **3. 优势和应用场景**
+
+1. 优势：
+   - 计算高效，能快速降低特征图尺寸。
+   - 有助于防止过拟合，因为它减少了模型的参数数量。
+   - 对噪声和局部变化具有一定的鲁棒性。
+2. 应用场景：
+   - 图像识别：在图像分类、目标检测等任务中广泛应用，帮助提取图像的关键特征。
+   - 自然语言处理：可以用于文本分类等任务中，对文本特征进行降维和提取重要信息。
+
+#### 4. [torch.nn.MaxPool2d(*kernel_size*, *stride=None*, *padding=0*, *dilation=1*, *return_indices=False*, *ceil_mode=False*)](https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html#torch.nn.MaxPool2d)
+
+Parameters
+
+- **kernel_size** ([*Union*](https://docs.python.org/3/library/typing.html#typing.Union)*[*[*int*](https://docs.python.org/3/library/functions.html#int)*,* [*Tuple*](https://docs.python.org/3/library/typing.html#typing.Tuple)*[*[*int*](https://docs.python.org/3/library/functions.html#int)*,* [*int*](https://docs.python.org/3/library/functions.html#int)*]**]*) – the size of the window to take a max over
+- **stride** ([*Union*](https://docs.python.org/3/library/typing.html#typing.Union)*[*[*int*](https://docs.python.org/3/library/functions.html#int)*,* [*Tuple*](https://docs.python.org/3/library/typing.html#typing.Tuple)*[*[*int*](https://docs.python.org/3/library/functions.html#int)*,* [*int*](https://docs.python.org/3/library/functions.html#int)*]**]*) – the stride of the window. Default value is `kernel_size`
+- **padding** ([*Union*](https://docs.python.org/3/library/typing.html#typing.Union)*[*[*int*](https://docs.python.org/3/library/functions.html#int)*,* [*Tuple*](https://docs.python.org/3/library/typing.html#typing.Tuple)*[*[*int*](https://docs.python.org/3/library/functions.html#int)*,* [*int*](https://docs.python.org/3/library/functions.html#int)*]**]*) – Implicit negative infinity padding to be added on both sides
+- **dilation** ([*Union*](https://docs.python.org/3/library/typing.html#typing.Union)*[*[*int*](https://docs.python.org/3/library/functions.html#int)*,* [*Tuple*](https://docs.python.org/3/library/typing.html#typing.Tuple)*[*[*int*](https://docs.python.org/3/library/functions.html#int)*,* [*int*](https://docs.python.org/3/library/functions.html#int)*]**]*) – a parameter that controls the stride of elements in the window
+- **return_indices** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – if `True`, will return the max indices along with the outputs. Useful for [`torch.nn.MaxUnpool2d`](https://pytorch.org/docs/stable/generated/torch.nn.MaxUnpool2d.html#torch.nn.MaxUnpool2d) later
+- **ceil_mode** ([*bool*](https://docs.python.org/3/library/functions.html#bool)) – when True, will use ceil instead of floor to compute the output shape（当计算格数不满卷积核时，是否采纳）
+
+#### **4. 常见的池化层类型**
+
+1. 最大池化（Max Pooling）
+
+   ：在局部区域内选择最大值作为输出。例如，对于一个 2×2 的池化窗口，取窗口内四个像素值中的最大值作为输出。
+
+   - 优点：能够突出局部区域中的最强响应，保留重要的特征信息。对噪声和局部变化具有一定的鲁棒性。
+   - 缺点：可能会丢失一些细节信息。
+
+2. 平均池化（Average Pooling）
+
+   ：计算局部区域内像素值的平均值作为输出。
+
+   - 优点：能够平滑特征图，减少噪声的影响。
+   - 缺点：可能会模糊重要的特征信息。
+
+3. 全局平均池化（Global Average Pooling）：对整个特征图进行平均池化，将每个特征图转换为一个单一的值。通常用于将卷积层的输出转换为全连接层的输入，减少参数数量，避免过拟合。
+
+### 5.实践
+
+#### 5.1 输入
+
+![](images/QQ_1730883694662.png)
+
+```python
+input = torch.tensor([[1,2,0,3,1],
+                      [0,1,2,3,1],
+                      [1,2,1,0,0],
+                      [5,2,3,1,1],
+                      [2,1,0,1,1]])
+input = torch.reshape(input, (-1, 1, 5, 5))
+print(input.shape)
+'''
+torch.Size([1, 1, 5, 5])
+'''
+```
+
+#### 5.2 池化操作
+
+![](images/QQ_1730883749878.png)
+
+```python
+class MyModule(nn.Module):
+    def __init__(self):
+        super(MyModule, self).__init__()
+        self.MaxPool = MaxPool2d(kernel_size=3, ceil_mode=True)
+    def forward(self, input):
+        return self.MaxPool(input)
+```
+
+#### 5.3 输出
+
+![](images/QQ_1730883792590.png)
+
+```python
+myModule = MyModule()
+output = myModule(input)
+print(output)
+'''
+tensor([[[[2, 3],
+          [5, 1]]]])
+'''
+```
+
+#### 5.4 对数据集进行操作
+
+```python
+dataset = torchvision.datasets.CIFAR10('./dataSet/CIFAR10', transform=torchvision.transforms.ToTensor(), train=False)
+dataloader = DataLoader(dataset, batch_size=64)
+
+writer = SummaryWriter('./logs/logs_maxpool')
+step = 0
+
+for data in dataloader:
+    imgs, targets = data
+    writer.add_images("inputs", imgs, step)
+    output = myModule(imgs)
+    writer.add_images("outputs", output, step)
+    step += 1
+
+writer.close()
+```
+
+#### 5.5 结果
+
+可以看到，输出的图像变模糊了，但是还是保留了原来的基本特征。可以减少数据量，加快训练速度。
+
+![](images/QQ_1730884208975.png)
