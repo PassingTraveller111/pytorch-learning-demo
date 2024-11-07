@@ -1358,3 +1358,189 @@ writer.close()
 可以看到，输出的图像变模糊了，但是还是保留了原来的基本特征。可以减少数据量，加快训练速度。
 
 ![](images/QQ_1730884208975.png)
+
+## 十一、非线形激活
+
+[非线性激活函数](https://pytorch.org/docs/stable/nn.html#non-linear-activations-weighted-sum-nonlinearity)
+
+常见的有
+
+ReLU（隐藏层常用）
+
+sigmoid（二分类问题，把输出控制在0～1）
+
+Softmax（多分类问题，每种分类的概率之和为1）
+
+
+
+## 十二、其他神经网络层
+
+### 1. Normalization Layers（归一化层）
+
+1. **目的**：
+   - 调整数据的分布，使得数据在特定的范围内，通常是为了**使不同特征具有相似的尺度**（对特征进行操作），**以便更好地进行模型训练。**
+   - **提高模型的收敛速度和稳定性**，避免因为特征尺度差异过大导致的训练困难。
+2. **方法**：
+   - 常见的归一化方法有最小 - 最大归一化、Z-score 标准化等。
+   - 例如 Z-score 标准化是将数据的每个特征值减去该特征的均值，再除以其标准差，使得数据的均值为 0，标准差为 1。
+3. **作用范围**：主要作用于输入数据的特征层面，对数据的分布进行调整。
+4. 和正则化的区别
+   1. 正则化是**为了防止模型过拟合。**
+   2. 作用于模型的**参数层面**，通过限制模型的复杂度来防止过拟合。
+
+### 2.Recurrent Layers（循环层）
+
+Recurrent Layers（循环层）在深度学习中主要用于处理序列数据，如时间序列数据、自然语言等。
+
+### 3.Transformer Layers
+
+Transformer 是一种在自然语言处理等领域广泛应用的深度学习架构，主要由多个 Transformer Layers（Transformer 层）组成。
+
+Transformer 层主要由两部分组成：多头自注意力机制（Multi-Head Attention）和前馈神经网络（Feed Forward Neural Network）。
+
+### 4.Linear Layers（线性层）
+
+在深度学习中，线性层（Linear Layers）也称为全连接层（Fully Connected Layers），是一种基本的神经网络层。
+
+### 5.Dropout Layers（随机失活层）
+
+在深度学习中，Dropout Layers（随机失活层）是一种常用的正则化技术，用于防止过拟合。
+
+**一、原理**
+
+Dropout 在训练过程中，以一定的概率随机将神经元的输出设置为零，相当于暂时从网络中 “丢弃” 一部分神经元。这样做使得模型在训练时不会过度依赖某些特定的神经元，从而增强了模型的泛化能力。
+
+具体来说，对于一个给定的神经元，每次训练迭代时，它都有一定的概率 被 “丢弃”。假设输入为 ，经过具有 Dropout 的层后，输出变为 ，其中 是一个随机向量，每个元素以概率 为 0，以概率 为 1。
+
+**二、作用**
+
+1. 防止过拟合：
+   - 通过随机丢弃神经元，减少了神经元之间的复杂共适应关系，使得模型更加鲁棒，不容易对训练数据过拟合。
+   - 迫使模型学习更加通用的特征，而不是依赖于特定的神经元组合。
+2. 增强模型的鲁棒性：
+   - 相当于给模型引入了一定程度的噪声，使模型对输入数据的微小变化不那么敏感，提高了模型的稳定性和鲁棒性。
+
+### 6.稀疏层（Sparse Layers）
+
+在深度学习中，稀疏层（Sparse Layers）主要用于处理稀疏数据和实现稀疏表示。
+
+**应用场景**
+
+1. 推荐系统：处理用户 - 商品评分矩阵等稀疏数据，进行个性化推荐。
+2. 图像和信号处理：对稀疏图像数据进行压缩、去噪等处理。
+3. 自然语言处理：学习文本数据的稀疏表示，用于文本分类、情感分析等任务。
+
+## 十三、Sequential
+
+用来连接各层形成网络
+
+两种写法：
+
+- torch.nn.Sequential(*args:  Module)
+
+- torch.nn.Sequential(args:  OrderDict[str, Module])
+
+实践：
+
+下面是一个用于CIFAR10数据集的分类神经网络模型
+
+![](images/QQ_1730901969522.png)
+
+通过下面的公式可以推算模型直接的卷积核使用的`padding`
+
+![](images/QQ_1730903014797.png)
+
+代码实现：
+
+```python
+import torch
+from torch import nn
+from torch.nn import Conv2d, MaxPool2d, Flatten, Linear, Sequential
+from torch.utils.tensorboard import SummaryWriter
+
+
+class MyModule(nn.Module):
+    def __init__(self):
+        super(MyModule, self).__init__()
+        self.model = Sequential(
+            Conv2d(3, 32, 5, padding=2),
+            MaxPool2d(2),
+            Conv2d(32, 32, 5, padding=2),
+            MaxPool2d(2),
+            Conv2d(32, 64, 5, padding=2),
+            MaxPool2d(2),
+            Flatten(),
+            Linear(1024, 64),
+            Linear(64, 10)
+        )
+    def forward(self, x):
+        return self.model(x)
+
+myModule = MyModule()
+print(myModule)
+'''
+MyModule(
+  (model): Sequential(
+    (0): Conv2d(3, 32, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+    (1): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (2): Conv2d(32, 32, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+    (3): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (4): Conv2d(32, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+    (5): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (6): Flatten(start_dim=1, end_dim=-1)
+    (7): Linear(in_features=1024, out_features=64, bias=True)
+    (8): Linear(in_features=64, out_features=10, bias=True)
+  )
+)
+'''
+input = torch.ones((64, 3, 32, 32)) # 创建一个数据
+output = myModule(input)
+print(output.shape)
+'''
+torch.Size([64, 10])
+'''
+
+writer = SummaryWriter('./logs/logs_seq')
+writer.add_graph(myModule, input)
+writer.close()
+
+```
+
+TensorBoard
+
+![](images/QQ_1730909537546.png)
+
+可以点击模型部分进一步查看每一层的组成，乃至点击层，可以查看更详细的输入
+
+![](images/QQ_1730909679714.png)
+
+## 十四、Loss Function（损失函数）
+
+### 1.损失函数
+
+在机器学习和深度学习中，损失函数（Loss Function）也被称为代价函数（Cost Function），是用来衡量模型预测值与真实值之间差异的函数。
+
+#### 1.1 作用
+
+1. 评估模型性能：损失函数的值越小，说明模型的预测值与真实值之间的差异越小，模型的性能越好。通过不断优化损失函数，使模型能够更好地拟合训练数据，提高预测的准确性。
+2. 指导模型训练：在模型训练过程中，损失函数的梯度被用于更新模型的参数。通过最小化损失函数，使模型逐渐学习到数据中的规律，从而提高模型的泛化能力。
+
+#### 1.2 常见损失函数
+
+[链接](https://pytorch.org/docs/stable/nn.html#loss-functions)
+
+- [`nn.L1Loss`](https://pytorch.org/docs/stable/generated/torch.nn.L1Loss.html#torch.nn.L1Loss)（平均绝对误差（L1 损失））
+- [`nn.MSELoss`](https://pytorch.org/docs/stable/generated/torch.nn.MSELoss.html#torch.nn.MSELoss)(均方误差（Mean Squared Error，MSE）)
+- [`nn.CrossEntropyLoss`](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)（用于多分类问题的交叉熵损失函数）
+
+
+
+
+
+总体过程
+
+![](images/QQ_1730953680501.png)
+
+![](images/QQ_1730953729879.png)
+
+![](images/QQ_1730953759999.png)
