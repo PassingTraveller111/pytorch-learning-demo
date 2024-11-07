@@ -1535,7 +1535,143 @@ TensorBoard
 
 
 
+## 十五、优化器（optim）
 
+[链接](https://pytorch.org/docs/stable/optim.html)
+
+**1.优化器的作用**
+
+在机器学习和深度学习中，优化器的主要作用是通过调整模型的参数，使得模型在训练数据上的损失函数最小化，从而提高模型的性能和泛化能力。具体来说：
+
+1. **参数更新**：根据损失函数的梯度信息来更新模型的参数。梯度表示损失函数对每个参数的变化率，优化器利用梯度来决定参数应该朝着哪个方向以及以多大的步长进行调整。
+2. **加速收敛**：帮助模型更快地收敛到一个较好的解。不同的优化器在不同的问题上可能具有不同的收敛速度。
+3. **避免局部最优**：尝试避免模型陷入局部最优解，寻找更全局的最优解。一些优化器具有自适应学习率等特性，可以在一定程度上提高跳出局部最优的可能性。
+
+**2.常见的优化器**
+
+1. **随机梯度下降（Stochastic Gradient Descent，SGD）**：
+   - 原理：随机选取一个样本或一小批样本，计算损失函数对参数的梯度，然后根据梯度更新参数。
+   - 优点：计算简单，容易实现。在大规模数据集上，由于每次只使用一小部分数据，计算效率较高。
+   - 缺点：容易陷入局部最优，收敛速度可能较慢。学习率需要手动调整，选择合适的学习率比较困难。
+   - 示例用法：在 PyTorch 中，`torch.optim.SGD`可用于创建 SGD 优化器。
+2. **动量优化器（Momentum）**：
+   - 原理：在更新参数时，不仅考虑当前梯度，还考虑上一次参数更新的方向，即引入了动量概念。相当于在梯度下降的过程中加入了惯性，使得参数更新更加稳定和快速。
+   - 优点：可以加速收敛，减少震荡，有助于跳出局部最优。
+   - 缺点：需要调整动量参数，选择合适的动量值也需要一定的经验。
+   - 示例用法：在很多深度学习框架中，如 TensorFlow 和 PyTorch，都可以通过设置优化器的参数来使用动量优化器。
+3. **自适应矩估计（Adaptive Moment Estimation，Adam）**：
+   - 原理：结合了动量和 RMSProp（Root Mean Square Propagation）的优点，同时自适应地调整每个参数的学习率。它维护了每个参数的一阶矩估计（即梯度的均值）和二阶矩估计（即梯度的方差），并根据这些估计来调整学习率。
+   - 优点：收敛速度快，对不同的问题具有较好的适应性，通常不需要太多的超参数调整。
+   - 缺点：在某些情况下可能会出现不稳定的情况。
+   - 示例用法：在深度学习框架中广泛使用，如`torch.optim.Adam`在 PyTorch 中用于创建 Adam 优化器。
+
+**3.优化器的使用**
+
+```python
+myModule = MyModule()
+loss = CrossEntropyLoss()
+optim = torch.optim.SGD(myModule.parameters(), lr=0.001)
+for epoch in range(20): # 进行20轮学习
+    running_loss = 0.0 # 当前轮学习的损失清零
+    for data in dataloader:
+        image, target = data
+        output = myModule(image)
+        result_loss = loss(output, target)
+        optim.zero_grad() # 将优化器中的所有参数的梯度置零。
+        '''
+        在进行反向传播计算梯度后，每次更新参数之前，需要先将参数的梯度清零。
+        这是因为在默认情况下，PyTorch 会在每次调用.backward()时累积梯度，而不是覆盖之前的梯度值。
+        如果不将梯度清零，那么在多次迭代中梯度会不断累加，导致参数更新出现错误的结果。
+        '''
+        result_loss.backward() # 反向传播
+        optim.step() # 更新参数
+        running_loss += result_loss
+    print(running_loss)
+```
+
+可以看到，每轮的总体损失在逐步下降
+
+![](images/QQ_1730960874752.png)
+
+
+
+## 十六、预训练（迁移学习）
+
+预训练（pretraining）在机器学习和深度学习中是一种常用的技术手段，主要是在特定任务的大规模数据上对模型进行初步的训练，以便让模型学习到通用的特征和模式。
+
+**一、预训练的过程**
+
+1. **选择预训练数据**：通常会选择来自广泛领域、数量庞大且具有一定代表性的数据。例如，在自然语言处理中，可以使用来自互联网的大量文本数据；在计算机视觉中，可以使用大型图像数据集。
+2. **选择预训练模型架构**：根据任务类型选择合适的模型架构。例如，对于图像任务可以选择卷积神经网络（如 ResNet、VGG 等）；对于自然语言处理任务可以选择 Transformer 架构的模型（如 BERT、GPT 等）。
+3. **进行预训练**：使用选定的大规模数据和模型架构进行训练。这个过程的目标是让模型学习到数据中的通用模式和特征，而不针对特定的任务进行优化。训练过程通常使用无监督学习方法（如在自然语言处理中使用掩码语言模型或下一句预测任务进行自监督学习）或有监督学习（如果有大量标注数据可用）。
+
+**二、预训练的好处**
+
+1. **加速模型收敛**：预训练得到的模型已经学习到了通用的特征表示，当针对特定任务进行微调时，模型可以更快地收敛，减少训练时间。
+2. **提升模型性能**：预训练可以帮助模型学习到更好的初始参数，从而在特定任务上获得更好的性能。特别是对于小规模数据集的任务，预训练可以有效地避免过拟合。
+3. **迁移学习**：预训练模型可以应用于不同但相关的任务，实现迁移学习。通过在源任务上进行预训练，然后在目标任务上进行微调，可以利用源任务中学到的知识来提升目标任务的性能。
+
+**三、预训练的应用场景**
+
+1. **自然语言处理**：BERT、GPT 等预训练语言模型在各种自然语言处理任务中取得了巨大成功，如文本分类、命名实体识别、机器翻译等。通过在大规模文本数据上进行预训练，这些模型可以学习到语言的语法、语义和上下文信息，然后在特定任务上进行微调即可获得良好的性能。
+2. **计算机视觉**：在图像分类、目标检测、语义分割等任务中，使用在大型图像数据集（如 ImageNet）上预训练的卷积神经网络可以显著提高模型的性能和泛化能力。
+
+下面以[VGG](https://pytorch.org/vision/stable/models/vgg.html)为例子进行预训练，采用CIFAR10作为数据集：
+
+```python
+import torchvision.datasets
+from torch.nn import Linear
+from torchvision.models import VGG16_Weights
+
+# trainSet = torchvision.datasets.ImageNet('./dataSet/ImageNet', split='train', download=True, transform=torchvision.transforms.ToTensor())
+# ImageNet这个数据集数据量太大了
+
+vgg16 = torchvision.models.vgg16(weights=VGG16_Weights.DEFAULT) # 通过预置的参数进行权重配置,会通过配好的链接去下载参数，这些参数会被缓存在电脑本地
+'''
+pretrained参数已经被废弃
+parameters:
+weights (VGG16_Weights, optional) – The pretrained weights to use. See VGG16_Weights below for more details, and possible values. By default, no pre-trained weights are used.
+
+progress (bool, optional) – If True, displays a progress bar of the download to stderr. Default is True.
+
+**kwargs – parameters passed to the torchvision.models.vgg.VGG base class. Please refer to the source code for more details about this class.
+'''
+
+print(vgg16)
+'''
+下面则是这个训练好的vgg16模型
+VGG(
+  (features): Sequential(
+    (0): Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    ......
+    (6): Linear(in_features=4096, out_features=1000, bias=True)
+  )
+)
+'''
+# 下面用CIFAR10数据集进行训练
+train_data = torchvision.datasets.CIFAR10('./dataSet/CIFAR10', download=True, transform=torchvision.transforms.ToTensor(), train=True)
+
+# 由于CIFAR10数据集有10种类别，而上面的vgg16模型有1000种输出，所以我们要进行迁移学习，改一下输出的类别
+vgg16.classifier.add_module('add_linear', Linear(1000, 10))
+print(vgg16)
+'''
+可以看到，新的vgg16模型多了一层线性层 add_linear
+VGG(
+  (features): Sequential(
+    (0): Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    ......
+    (30): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+  )
+  (avgpool): AdaptiveAvgPool2d(output_size=(7, 7))
+  (classifier): Sequential(
+    (0): Linear(in_features=25088, out_features=4096, bias=True)
+    ......
+    (6): Linear(in_features=4096, out_features=1000, bias=True)
+    (add_linear): Linear(in_features=1000, out_features=10, bias=True)
+  )
+)
+'''
+```
 
 总体过程
 
