@@ -1673,6 +1673,240 @@ VGG(
 '''
 ```
 
+## 十七、模型保存与加载
+
+在 PyTorch 中，可以通过以下方式进行模型的保存与加载。
+
+**一、模型保存**
+
+1. 保存整个模型：
+   - 使用`torch.save()`函数可以保存整个模型，包括模型的结构和参数。
+   - 示例代码：
+
+```python
+import torch
+import torch.nn as nn
+
+class MyModel(nn.Module):
+    def __init__(self):
+        super(MyModel, self).__init__()
+        self.linear = nn.Linear(10, 5)
+
+    def forward(self, x):
+        return self.linear(x)
+
+model = MyModel()
+torch.save(model, 'my_model.pth')
+```
+
+1. 只保存模型参数：
+   - 通常情况下，为了节省存储空间和提高加载速度，可以只保存模型的参数（state_dict）。
+   - 示例代码：
+
+```python
+torch.save(model.state_dict(), 'my_model_params.pth')
+```
+
+**二、模型加载**
+
+1. 加载整个模型：
+   - 如果保存的是整个模型，可以直接使用`torch.load()`加载。
+   - 示例代码：
+
+```python
+loaded_model = torch.load('my_model.pth')
+```
+
+1. 加载模型参数：
+   - 当只保存了模型参数时，需要先创建模型对象，然后加载参数。
+   - 示例代码：
+
+```python
+model = MyModel()
+model.load_state_dict(torch.load('my_model_params.pth'))
+```
+
+在加载模型时，确保模型的定义与保存模型时的结构一致，否则可能会出现加载错误。另外，在加载模型参数时，最好在加载代码中进行适当的错误处理，以确保程序的稳定性。
+
+## 十八、利用GPU训练-win
+
+在 PyTorch 中利用 GPU 训练可以极大地加速模型的训练过程。以下是具体步骤：
+
+**一、检查 GPU 是否可用**
+
+```python
+import torch
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(device)
+```
+
+这将输出 `"cuda"` 如果 GPU 可用，否则输出 `"cpu"`。
+
+**二、将模型和数据转移到 GPU**
+
+1. 模型转移：
+
+```python
+model = YourModel()
+model.to(device)
+```
+
+2. 数据转移：
+
+如果你的数据是张量（通常情况下是），可以这样转移：
+
+```python
+data = data.to(device)
+labels = labels.to(device)
+```
+
+3. 损失函数和优化器转移：
+
+```
+lossFn = lossFn.to(device)
+optim = optim.to(device)
+```
+
+**三、在训练和评估过程中使用 GPU**
+
+在训练循环中，确保所有的张量运算都在 GPU 上进行。例如：
+
+```python
+for epoch in range(num_epochs):
+    model.train()
+    for inputs, labels in train_loader:
+        inputs, labels = inputs.to(device), labels.to(device)
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+```
+
+在评估模型时也同样需要将数据转移到 GPU：
+
+```python
+model.eval()
+with torch.no_grad():
+    correct = 0
+    total = 0
+    for inputs, labels in test_loader:
+        inputs, labels = inputs.to(device), labels.to(device)
+        outputs = model(inputs)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+print(f'Accuracy on test set: {100 * correct / total}%')
+```
+
+注意事项：
+
+- 确保你的 PyTorch 版本支持 GPU 计算，并且你的系统安装了正确的 GPU 驱动和深度学习框架所需的 GPU 加速库（如 CUDA 和 cuDNN）。
+- 如果 GPU 内存不足，可以尝试减小批次大小或者使用更高效的模型架构。
+
+## 十九、利用GPU训练-mac
+
+- 可以在 Python 环境中使用以下代码进行测试，查看 MPS 后端是否可用：
+
+```python
+import torch
+print(torch.backends.mps.is_built())
+print(torch.backends.mps.is_available())
+```
+
+如果以上两个输出都为`True`，则说明 PyTorch 的 MPS 后端已正确安装且可用。
+
+1.**将模型和数据转移到 GPU**：
+
+- **设置设备**：在代码中指定使用的设备为`mps`1。
+
+```python
+device = torch.device("mps")
+```
+
+- **转移模型**：将定义好的模型转移到`mps`设备上。
+
+```python
+model = YourModel()
+model.to(device)
+```
+
+- **转移数据**：如果数据是张量类型，在训练和测试时，也需要将数据转移到`mps`设备上。
+
+```python
+data = data.to(device)
+labels = labels.to(device)
+```
+
+- **转移损失函数和优化器**：把损失函数转移到`mps`设备上，优化器会随着模型转移到`mps`上，所以不用操作
+
+```python
+# 创建损失函数
+lossFn = nn.CrossEntropyLoss()
+lossFn = lossFn.to(device) # 损失函数转移到mps上
+# 创建优化器
+learning_rate = 0.01
+optim = torch.optim.SGD(myModule.parameters(), lr=learning_rate)
+```
+
+2.**使用 GPU 进行训练**：在训练循环中，确保所有的张量运算都在`mps`设备上进行。例如：
+
+```python
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+for epoch in range(num_epochs):
+    model.train()
+    for inputs, labels in train_loader:
+        inputs, labels = inputs.to(device), labels.to(device)
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+```
+
+3. **评估模型（可选）**：在评估模型性能时，同样需要将数据转移到`mps`设备上进行测试4。
+
+```python
+model.eval()
+with torch.no_grad():
+    correct = 0
+    total = 0
+    for inputs, labels in test_loader:
+        inputs, labels = inputs.to(device), labels.to(device)
+        outputs = model(inputs)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+```
+
+需要注意的是，确保你的 macOS 操作系统版本在 12.3 及以上，以获得更好的 GPU 支持2。如果在使用过程中遇到问题，可以查看 PyTorch 的官方文档或相关论坛获取更多帮助。
+
+## 二十、关于GPU
+
+查看设备信息
+
+在win下查看英伟达显卡信息：
+
+```
+invidia-smi
+```
+
+在macos下查看显卡信息：
+
+```
+system_profiler SPDisplaysDataType
+```
+
+总体的`device`判断逻辑
+
+```python
+import torch
+device = torch.device("cuda" if torch.cuda.is_available()
+                      else ("mps" if (torch.backends.mps.is_built() and torch.backends.mps.is_available())
+                      else "cpu"))
+```
+
 总体过程
 
 ![](images/QQ_1730953680501.png)
